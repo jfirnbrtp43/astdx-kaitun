@@ -42,6 +42,8 @@ for _, code in ipairs(codes) do
     end)
 end
 
+wait(2)
+
 
 -- Banner indices (used for the summon request)
 local bannerIndices = {
