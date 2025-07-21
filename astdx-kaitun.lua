@@ -123,6 +123,15 @@ local function countUnitsByName(unitsTable, targetName)
     return count
 end
 
+local secretUnits = {
+    ["Kokushibo"] = "StandardSummon2",
+    ["Chrollo"] = "StandardSummon"
+}
+
+local function isSecretUnit(unitName)
+    return secretUnits[unitName] ~= nil
+end
+
 -- MAIN LOOP
 while true do
     -- Get inventory
@@ -137,6 +146,8 @@ while true do
         wait(checkInterval)
         continue
     end
+
+    
 
     -- Track if all targets met or not on banner
     local allDone = true
@@ -164,51 +175,58 @@ while true do
             continue
         end
 
-        -- Find if unit is on any banner (any rarity)
-        local foundOnBanner = false
-        for _, rarity in ipairs(rarityOrder) do
-            if isUnitInBanner(banner1, unitName, rarity) then
-                bannerToUse = "StandardSummon"
-                rarityFlag = rarity
-                foundUnitName = unitName
-                if not getgenv()._unitAnnounced then getgenv()._unitAnnounced = {} end
-
-                if not getgenv()._unitAnnounced[unitName] then
-                    sendEmbedWebhook(
-                        "📢 Unit Available on Banner",
-                        "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
-                        5793266 -- light blue
-                    )
-                    getgenv()._unitAnnounced[unitName] = true
-                end
-
-                foundOnBanner = true
-                break
-            elseif isUnitInBanner(banner2, unitName, rarity) then
-                bannerToUse = "StandardSummon2"
-                rarityFlag = rarity
-                foundUnitName = unitName
-                if not getgenv()._unitAnnounced then getgenv()._unitAnnounced = {} end
-                if not getgenv()._unitAnnounced[unitName] then
-                    sendEmbedWebhook(
-                        "📢 Unit Available on Banner",
-                        "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
-                        5793266 -- light blue
-                    )
-                    getgenv()._unitAnnounced[unitName] = true
-                end
-
-                foundOnBanner = true
-                break
-            end
-        end
-
-        if foundOnBanner then
+        if isSecretUnit(unitName) then
+            -- Summon on secret banner for this unit
+            bannerToUse = secretUnits[unitName]
+            rarityFlag = "Secret"
+            foundUnitName = unitName
             allDone = false
-            break -- Only summon for one unit at a time
+            break
         else
-            -- This unit is missing target copies but not on banner -> skip summon for this unit
-            print("❌ " .. unitName .. " not on any banner. Skipping summon for this unit.")
+            -- Find if unit is on any banner (any rarity)
+            local foundOnBanner = false
+            for _, rarity in ipairs(rarityOrder) do
+                if isUnitInBanner(banner1, unitName, rarity) then
+                    bannerToUse = "StandardSummon"
+                    rarityFlag = rarity
+                    foundUnitName = unitName
+                    if not getgenv()._unitAnnounced then getgenv()._unitAnnounced = {} end
+
+                    if not getgenv()._unitAnnounced[unitName] then
+                        sendEmbedWebhook(
+                            "📢 Unit Available on Banner",
+                            "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
+                            5793266 -- light blue
+                        )
+                        getgenv()._unitAnnounced[unitName] = true
+                    end
+
+                    foundOnBanner = true
+                    break
+                elseif isUnitInBanner(banner2, unitName, rarity) then
+                    bannerToUse = "StandardSummon2"
+                    rarityFlag = rarity
+                    foundUnitName = unitName
+                    if not getgenv()._unitAnnounced then getgenv()._unitAnnounced = {} end
+                    if not getgenv()._unitAnnounced[unitName] then
+                        sendEmbedWebhook(
+                            "📢 Unit Available on Banner",
+                            "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
+                            5793266 -- light blue
+                        )
+                        getgenv()._unitAnnounced[unitName] = true
+                    end
+                    foundOnBanner = true
+                    break
+                end
+            end
+            if foundOnBanner then
+                allDone = false
+                break -- Only summon for one unit at a time
+            else
+                -- This unit is missing target copies but not on banner -> skip summon for this unit
+                print("❌ " .. unitName .. " not on any banner. Skipping summon for this unit.")
+            end
         end
     end
 
