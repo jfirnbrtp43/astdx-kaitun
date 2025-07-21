@@ -30,6 +30,34 @@ local redeemCodes = config.RedeemCodes or {
     "THANKYOUFORLIKES123"
 }
 
+-- Enable Game Settings
+local function applyGameSettings()
+    local settingsList = {
+        { Auto = true },
+        { EnemyName = true },
+        { Enemy = true },
+        { EnemyHints = true },
+        { Element = true },
+        { Low = true },
+        { WVFX = "None" },
+        { Walk = true },
+        { Cutscene = "Never" },
+        { DMG = "None" }
+    }
+
+    for _, setting in ipairs(settingsList) do
+        pcall(function()
+            GetFunction:InvokeServer({
+                Type = "Settings",
+                Mode = "Set",
+                List = setting
+            })
+        end)
+    end
+end
+
+applyGameSettings()
+
 -- 🌐 SERVICES
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
