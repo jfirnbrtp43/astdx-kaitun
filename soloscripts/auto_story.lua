@@ -24,3 +24,45 @@ local function getLastCompletedStory(storyData)
 
     return lastWorld, lastChapter
 end
+
+
+local function getLastUnlockedStory()
+    local success, result = pcall(function()
+        return game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("GetFunction"):InvokeServer({
+            Type = "Quest",
+            Mode = "Get"
+        })
+    end)
+
+    if not success or not result or not result.Story or not result.Story.Quests then
+        warn("❌ Failed to get story progression")
+        return nil
+    end
+
+    local highestWorldNum = 0
+    local highestActNum = 0
+    local latestWorld, latestAct = nil, nil
+
+    for _, quest in pairs(result.Story.Quests) do
+        if quest.Map and quest.Act and quest.Act <= 6 then
+            local worldNum = tonumber(quest.Map:match("%d+")) or 0
+            local actNum = tonumber(quest.Act) or 0
+
+            -- If completed or (not completed but further along)
+            if quest.Completed or (worldNum > highestWorldNum or (worldNum == highestWorldNum and actNum > highestActNum)) then
+                highestWorldNum = worldNum
+                highestActNum = actNum
+                latestWorld = quest.Map
+                latestAct = actNum
+            end
+        end
+    end
+
+    return latestWorld, latestAct
+end
+
+-- Use it like:
+local world, chapter = getLastUnlockedStory()
+if world and chapter then
+    print("Last unlocked story map:", world, "Chapter", chapter)
+end
