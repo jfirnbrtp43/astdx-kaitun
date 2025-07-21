@@ -1,37 +1,30 @@
-local function getLastCompletedStory(storyData)
-    local lastWorld, lastChapter = nil, nil
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local GetFunction = Remotes:WaitForChild("GetFunction")
 
-    local worldList = {}
-    for worldName in pairs(storyData) do
-        table.insert(worldList, worldName)
-    end
-    table.sort(worldList, function(a, b)
-        return tonumber(a:match("%d+")) < tonumber(b:match("%d+"))
-    end)
+-- Step 1: Interact with the StoryPod to open the story pod UI / prepare teleport
+local interactArgs = {
+    {
+        Type = "Lobby",
+        Object = workspace:WaitForChild("Map"):WaitForChild("Buildings"):WaitForChild("Pods"):WaitForChild("StoryPod"):WaitForChild("Interact"),
+        Mode = "Pod"
+    }
+}
 
-    for _, worldName in ipairs(worldList) do
-        local chapters = storyData[worldName]
-        for chapterName, data in pairs(chapters) do
-            if data.Completed then
-                lastWorld = worldName
-                local chapNum = tonumber(chapterName:match("%d+"))
-                if not lastChapter or chapNum > lastChapter then
-                    lastChapter = chapNum
-                end
-            end
-        end
-    end
+local success, err = pcall(function()
+    GetFunction:InvokeServer(unpack(interactArgs))
+end)
 
-    return lastWorld, lastChapter
+if not success then
+    warn("Failed to interact with StoryPod:", err)
+    return
 end
+print("Interacted with StoryPod successfully.")
 
-
+-- Step 2: Get last unlocked story
 local function getLastUnlockedStory()
     local success, result = pcall(function()
-        return game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("GetFunction"):InvokeServer({
-            Type = "Quest",
-            Mode = "Get"
-        })
+        return GetFunction:InvokeServer({ Type = "Quest", Mode = "Get" })
     end)
 
     if not success or not result or not result.Story or not result.Story.Quests then
@@ -48,7 +41,6 @@ local function getLastUnlockedStory()
             local worldNum = tonumber(quest.Map:match("%d+")) or 0
             local actNum = tonumber(quest.Act) or 0
 
-            -- If completed or (not completed but further along)
             if quest.Completed or (worldNum > highestWorldNum or (worldNum == highestWorldNum and actNum > highestActNum)) then
                 highestWorldNum = worldNum
                 highestActNum = actNum
@@ -61,8 +53,59 @@ local function getLastUnlockedStory()
     return latestWorld, latestAct
 end
 
--- Use it like:
-local world, chapter = getLastUnlockedStory()
-if world and chapter then
-    print("Last unlocked story map:", world, "Chapter", chapter)
+local function teleportToLatestStory()
+    local world, chapter = getLastUnlockedStory()
+    if not world or not chapter then
+        warn("Could not find last unlocked story.")
+        return
+    end
+
+    print("Teleporting to:", world, "Chapter:", chapter)
+
+    -- Step 3: Send teleport request
+    local teleportArgs = {
+        {
+            Chapter = chapter,
+            Type = "Lobby",
+            Name = world,
+            Difficulty = "Normal",
+            Mode = "Pod",
+            Friend = false,
+            Update = true
+        }
+    }
+
+    local success, err = pcall(function()
+        GetFunction:InvokeServer(unpack(teleportArgs))
+    end)
+
+    if not success then
+        warn("Failed to send teleport request:", err)
+        return
+    end
+    print("Teleport request sent successfully.")
+
+    wait(1) -- wait a bit before starting
+
+    -- Step 4: Start the teleport
+    local startArgs = {
+        {
+            Start = true,
+            Type = "Lobby",
+            Update = true,
+            Mode = "Pod"
+        }
+    }
+
+    local success, err = pcall(function()
+        GetFunction:InvokeServer(unpack(startArgs))
+    end)
+
+    if success then
+        print("Teleport started successfully.")
+    else
+        warn("Failed to start teleport:", err)
+    end
 end
+
+teleportToLatestStory()
