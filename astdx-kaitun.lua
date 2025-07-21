@@ -1,13 +1,15 @@
--- ✅ USER CONFIG (to be placed in Executor)
--- getgenv().AutoSummonConfig = {
---     WebhookURL = "", -- Optional
---     UseMultiSummon = true,
---     CheckInterval = 3,
---     TargetUnits = {
---         ["Rukia"] = 1
---     }
--- }
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
+--[[
+getgenv().AutoSummonConfig = {
+     WebhookURL = "", -- Optional
+     UseMultiSummon = true,
+     CheckInterval = 3,
+    --["UnitName"] = TargetAmount
+     TargetUnits = {
+         ["Rukia"] = 1
+     }
+}
+loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
+]]--
 
 -- 🧠 LOAD CONFIG
 local config = getgenv().AutoSummonConfig or {}
