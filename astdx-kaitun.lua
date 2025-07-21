@@ -85,7 +85,6 @@ local function autoClaimQuests()
     end)
 
     if not success or type(questData) ~= "table" then
-        warn("❌ Failed to fetch quest data.")
         return
     end
 
@@ -99,7 +98,6 @@ local function autoClaimQuests()
                         Key = key,
                         Index = index
                     })
-                    print("✅ Claimed quest:", key, index)
                 end)
             end
         end
