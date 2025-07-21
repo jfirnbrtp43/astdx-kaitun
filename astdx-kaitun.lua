@@ -13,7 +13,10 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kai
 
 -- 🧠 LOAD CONFIG
 local config = getgenv().AutoSummonConfig or {}
-local targetUnits = config.TargetUnits or {}
+local targetUnits = config.TargetUnits or {
+    ["GokuEpic"] = 3,
+    ["Sanji"] = 1
+}
 local useMultiSummon = config.UseMultiSummon or false
 local checkInterval = config.CheckInterval or 3
 local webhookURL = config.WebhookURL or ""
@@ -57,6 +60,39 @@ local function applyGameSettings()
 end
 
 applyGameSettings()
+
+-- 🎯 Auto Claim Completed Quests
+local function autoClaimQuests()
+    local success, questData = pcall(function()
+        return GetFunction:InvokeServer({
+            Type = "Quest",
+            Mode = "Get"
+        })
+    end)
+
+    if not success or type(questData) ~= "table" then
+        warn("❌ Failed to fetch quest data.")
+        return
+    end
+
+    for key, questTypes in pairs(questData) do
+        for index, quest in pairs(questTypes) do
+            if quest.Completed and not quest.Claimed then
+                pcall(function()
+                    GetFunction:InvokeServer({
+                        Mode = "Claim",
+                        Type = "Quest",
+                        Key = key,
+                        Index = index
+                    })
+                    print("✅ Claimed quest:", key, index)
+                end)
+            end
+        end
+    end
+end
+
+autoClaimQuests()
 
 -- 🌐 SERVICES
 local HttpService = game:GetService("HttpService")
