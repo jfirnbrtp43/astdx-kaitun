@@ -15,6 +15,34 @@ local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("Summo
 local banner1 = summonDisplay:FindFirstChild("StandardSummon")
 local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
 
+-- Replace or add your known codes here
+local codes = {
+    "AFIRSTTIME3001",
+    "FREENIMBUSMOUNT",
+    "VERYHIGHLIKEB",
+    "UPD1",
+    "LIKEF5",
+    "THREEHUNDREDTHOUSANDPLAYERS",
+    "FOLLOWS10KBREAD",
+    "UPD2",
+    "NEXTLIKEGOAL500K",
+    "THANKYOUFORLIKES123"
+}
+
+for _, code in ipairs(codes) do
+    local args = {
+        {
+            Type = "Code",
+            Mode = "Redeem",
+            Code = code
+        }
+    }
+    local success, response = pcall(function()
+        return GetFunction:InvokeServer(unpack(args))
+    end)
+end
+
+
 -- Banner indices (used for the summon request)
 local bannerIndices = {
     StandardSummon = 1,
