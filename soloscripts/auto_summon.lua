@@ -4,10 +4,7 @@ getgenv().Configs = getgenv().Configs or {}
 
 local configs = getgenv().Configs
 
-local targetUnits = configs.TargetUnits or {
-    ["Ulqiorra"] = 1,
-    ["Rukia"] = 1
-}
+local targetUnits = configs.TargetUnits or {}
 
 local useMultiSummon = configs.UseMultiSummon or false
 local checkInterval = configs.CheckInterval or 3 -- seconds

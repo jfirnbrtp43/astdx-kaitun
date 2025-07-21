@@ -1,22 +1,21 @@
--- 🧠 SETTINGS
--- [UnitName] = [TargetAmount]
-local targetUnits = {
-    ["Ulqiorra"] = 1,
-    ["Rukia"] = 1
-}
-local useMultiSummon = false
-local checkInterval = 3 -- seconds
+-- ✅ USER CONFIG (to be placed in Executor)
+-- getgenv().AutoSummonConfig = {
+--     WebhookURL = "", -- Optional
+--     UseMultiSummon = true,
+--     CheckInterval = 3,
+--     TargetUnits = {
+--         ["Rukia"] = 1
+--     }
+-- }
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
 
--- SERVICES
-local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local GetFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("GetFunction")
-local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("SummonDisplay")
-local banner1 = summonDisplay:FindFirstChild("StandardSummon")
-local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
-
--- Replace or add your known codes here
-local codes = {
+-- 🧠 LOAD CONFIG
+local config = getgenv().AutoSummonConfig or {}
+local targetUnits = config.TargetUnits or {}
+local useMultiSummon = config.UseMultiSummon or false
+local checkInterval = config.CheckInterval or 3
+local webhookURL = config.WebhookURL or ""
+local redeemCodes = config.RedeemCodes or {
     "AFIRSTTIME3001",
     "FREENIMBUSMOUNT",
     "VERYHIGHLIKEB",
@@ -29,33 +28,29 @@ local codes = {
     "THANKYOUFORLIKES123"
 }
 
-for _, code in ipairs(codes) do
-    local args = {
-        {
+-- 🌐 SERVICES
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GetFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("GetFunction")
+local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("SummonDisplay")
+local banner1 = summonDisplay:FindFirstChild("StandardSummon")
+local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
+
+-- 🎁 REDEEM CODES
+for _, code in ipairs(redeemCodes) do
+    pcall(function()
+        GetFunction:InvokeServer({
             Type = "Code",
             Mode = "Redeem",
             Code = code
-        }
-    }
-    local success, response = pcall(function()
-        return GetFunction:InvokeServer(unpack(args))
+        })
     end)
 end
-
 wait(2)
 
-
--- Banner indices (used for the summon request)
-local bannerIndices = {
-    StandardSummon = 1,
-    StandardSummon2 = 2
-}
-
--- 🌐 Webhook URL
-local webhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM"
-
--- 🔁 Function to send webhook
+-- 🔁 WEBHOOK SENDER
 local function sendEmbedWebhook(title, description, color)
+    if webhookURL == "" then return end
     local username = game.Players.LocalPlayer and game.Players.LocalPlayer.Name or "Unknown User"
     local data = {
         ["embeds"] = {{
@@ -69,8 +64,8 @@ local function sendEmbedWebhook(title, description, color)
         }}
     }
 
-    local success, response = pcall(function()
-        return HttpService:RequestAsync({
+    pcall(function()
+        HttpService:RequestAsync({
             Url = webhookURL,
             Method = "POST",
             Headers = {
@@ -79,48 +74,21 @@ local function sendEmbedWebhook(title, description, color)
             Body = HttpService:JSONEncode(data)
         })
     end)
-
-    if not success then
-        warn("❌ Webhook failed:", response)
-    end
 end
 
-
--- Kill previous runs
+-- 🛑 KILL PREVIOUS RUNS
 if getgenv().AutoSummonRunning then
     getgenv().AutoSummonRunning = false
     task.wait(0.5)
 end
 getgenv().AutoSummonRunning = true
 
--- 🔁 Helper: Check if unit is in a banner
+-- 🔎 HELPERS
 local function isUnitInBanner(bannerFolder, unitName, starLevel)
     if not bannerFolder then return false end
     local starFolder = bannerFolder:FindFirstChild(starLevel)
     if not starFolder then return false end
     return starFolder:FindFirstChild(unitName) ~= nil
-end
-
--- 🔁 Determine which banner to summon from
-local function getBannerForUnit(unitName, starLevel)
-    if isUnitInBanner(banner1, unitName, starLevel) then
-        return "StandardSummon"
-    elseif isUnitInBanner(banner2, unitName, starLevel) then
-        return "StandardSummon2"
-    else
-        return nil
-    end
-end
-
--- 🔍 Count owned units
-local function countUnitsByName(unitsTable, targetName)
-    local count = 0
-    for _, unit in pairs(unitsTable) do
-        if unit.Name == targetName then
-            count += 1
-        end
-    end
-    return count
 end
 
 local secretUnits = {
@@ -132,116 +100,64 @@ local function isSecretUnit(unitName)
     return secretUnits[unitName] ~= nil
 end
 
--- MAIN LOOP
+-- 🔁 MAIN LOOP
 while true do
-    -- Get inventory
     local success, inventory = pcall(function()
-        return GetFunction:InvokeServer({
-            Type = "Inventory",
-            Mode = "Units"
-        })
+        return GetFunction:InvokeServer({ Type = "Inventory", Mode = "Units" })
     end)
+    if not success or not inventory then wait(checkInterval) continue end
 
-    if not success or not inventory then
-        wait(checkInterval)
-        continue
-    end
-
-    
-
-    -- Track if all targets met or not on banner
     local allDone = true
-
-    -- Variables to hold the summon info for the current attempt
     local bannerToUse, rarityFlag, foundUnitName = nil, nil, nil
-
     local rarityOrder = { "5", "4", "3" }
 
-    -- Check each unit independently
     for unitName, targetAmount in pairs(targetUnits) do
         local ownedCount = 0
-        -- Count how many owned
         for _, unit in pairs(inventory) do
-            if unit.Name == unitName then
-                ownedCount += 1
-            end
+            if unit.Name == unitName then ownedCount += 1 end
         end
-
         print("📦 You own", ownedCount, unitName)
-
-        -- Skip summoning if target met
-        if ownedCount >= targetAmount then
-            -- Already have enough, no summon for this unit
-            continue
-        end
+        if ownedCount >= targetAmount then continue end
 
         if isSecretUnit(unitName) then
-            -- Summon on secret banner for this unit
             bannerToUse = secretUnits[unitName]
             rarityFlag = "Secret"
             foundUnitName = unitName
             allDone = false
             break
         else
-            -- Find if unit is on any banner (any rarity)
-            local foundOnBanner = false
             for _, rarity in ipairs(rarityOrder) do
                 if isUnitInBanner(banner1, unitName, rarity) then
-                    bannerToUse = "StandardSummon"
-                    rarityFlag = rarity
-                    foundUnitName = unitName
-                    if not getgenv()._unitAnnounced then getgenv()._unitAnnounced = {} end
-
-                    if not getgenv()._unitAnnounced[unitName] then
-                        sendEmbedWebhook(
-                            "📢 Unit Available on Banner",
-                            "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
-                            5793266 -- light blue
-                        )
-                        getgenv()._unitAnnounced[unitName] = true
-                    end
-
-                    foundOnBanner = true
+                    bannerToUse, rarityFlag, foundUnitName = "StandardSummon", rarity, unitName
+                    allDone = false
                     break
                 elseif isUnitInBanner(banner2, unitName, rarity) then
-                    bannerToUse = "StandardSummon2"
-                    rarityFlag = rarity
-                    foundUnitName = unitName
-                    if not getgenv()._unitAnnounced then getgenv()._unitAnnounced = {} end
-                    if not getgenv()._unitAnnounced[unitName] then
-                        sendEmbedWebhook(
-                            "📢 Unit Available on Banner",
-                            "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
-                            5793266 -- light blue
-                        )
-                        getgenv()._unitAnnounced[unitName] = true
-                    end
-                    foundOnBanner = true
+                    bannerToUse, rarityFlag, foundUnitName = "StandardSummon2", rarity, unitName
+                    allDone = false
                     break
                 end
             end
-            if foundOnBanner then
-                allDone = false
-                break -- Only summon for one unit at a time
-            else
-                -- This unit is missing target copies but not on banner -> skip summon for this unit
-                print("❌ " .. unitName .. " not on any banner. Skipping summon for this unit.")
+
+            if bannerToUse and not getgenv()._unitAnnounced then
+                getgenv()._unitAnnounced = {}
+            end
+
+            if bannerToUse and not getgenv()._unitAnnounced[unitName] then
+                sendEmbedWebhook(
+                    "📢 Unit Available on Banner",
+                    "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
+                    5793266
+                )
+                getgenv()._unitAnnounced[unitName] = true
             end
         end
     end
 
-    -- If all units either met targets or not on banner, stop
     if allDone then
-        sendEmbedWebhook(
-        "✅ Auto-Summon Complete",
-        "All target units have been obtained or are no longer on banners.\nAuto-summon has stopped.",
-        65280 -- green
-    )
-
+        sendEmbedWebhook("✅ Auto-Summon Complete", "All target units obtained or not on banners.", 65280)
         break
     end
 
-    -- Summon only if a banner & unit found
     if bannerToUse and foundUnitName then
         local autoTable = {
             T3 = false, S3 = false, N3 = false,
@@ -249,15 +165,13 @@ while true do
             T5 = false, S5 = false, N5 = false
         }
 
-        local summonArgs = {
-            {
-                Type = "Gacha",
-                Auto = autoTable,
-                Mode = "Purchase",
-                Bundle = useMultiSummon,
-                Index = bannerToUse
-            }
-        }
+        local summonArgs = {{
+            Type = "Gacha",
+            Auto = autoTable,
+            Mode = "Purchase",
+            Bundle = useMultiSummon,
+            Index = bannerToUse
+        }}
 
         local summonSuccess, summonResult = pcall(function()
             return GetFunction:InvokeServer(unpack(summonArgs))
@@ -265,13 +179,11 @@ while true do
 
         if summonSuccess then
             print("🎲 Summoned on banner:", bannerToUse, "| Rarity:", rarityFlag)
-            -- No webhook here to avoid spam
         else
             warn("⚠️ Summon failed:", summonResult)
             break
         end
     else
-        -- No units found on any banner to summon for
         print("⏳ No target units currently available on banners, waiting...")
         wait(10)
     end
