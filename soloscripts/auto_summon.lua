@@ -186,19 +186,17 @@ while true do
                         )
                         getgenv()._unitAnnounced[unitName] = true
                     end
-
                     foundOnBanner = true
                     break
                 end
             end
-        end
-
-        if foundOnBanner then
-            allDone = false
-            break -- Only summon for one unit at a time
-        else
-            -- This unit is missing target copies but not on banner -> skip summon for this unit
-            print("❌ " .. unitName .. " not on any banner. Skipping summon for this unit.")
+            if foundOnBanner then
+                allDone = false
+                break -- Only summon for one unit at a time
+            else
+                -- This unit is missing target copies but not on banner -> skip summon for this unit
+                print("❌ " .. unitName .. " not on any banner. Skipping summon for this unit.")
+            end
         end
     end
 
