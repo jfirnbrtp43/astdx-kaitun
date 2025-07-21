@@ -27,10 +27,4 @@ for _, code in ipairs(codes) do
     local success, response = pcall(function()
         return GetFunction:InvokeServer(unpack(args))
     end)
-
-    if success then
-        print("✅ Redeemed code:", code)
-    else
-        warn("❌ Failed to redeem code:", code)
-    end
 end
