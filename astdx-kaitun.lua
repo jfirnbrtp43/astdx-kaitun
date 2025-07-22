@@ -19,6 +19,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kai
 ]]--
 
 
+
 -- 🧠 LOAD CONFIG
 local config = getgenv().AutoSummonConfig or {}
 local targetUnits = config.TargetUnits or {
@@ -78,28 +79,33 @@ applyGameSettings()
 
 -- 🎯 Auto Claim Completed Quests
 local function autoClaimQuests()
-    local success, questData = pcall(function()
-        return GetFunction:InvokeServer({
+    local args = {
+        {
             Type = "Quest",
             Mode = "Get"
-        })
+        }
+    }
+
+    local success, questData = pcall(function()
+        return GetFunction:InvokeServer(unpack(args))
     end)
 
-    if not success or type(questData) ~= "table" then
-        return
-    end
+    if not success or typeof(questData) ~= "table" then return end
 
-    for key, questTypes in pairs(questData) do
-        if typeof(questTypes) == "table" then
-            for index, quest in pairs(questTypes) do
-                if typeof(quest) == "table" and quest.Completed and not quest.Claimed then
+    for questGroupKey, questGroup in pairs(questData) do
+        if typeof(questGroup) == "table" and typeof(questGroup.Quests) == "table" then
+            for index, quest in ipairs(questGroup.Quests) do
+                if quest.IsComplete == true and quest.Progress >= quest.Goal then
+                    print("🎯 Claiming quest:", quest.Name)
                     pcall(function()
-                        GetFunction:InvokeServer({
-                            Mode = "Claim",
-                            Type = "Quest",
-                            Key = key,
-                            Index = index
-                        })
+                        GetFunction:InvokeServer(unpack({
+                            {
+                                Type = "Quest",
+                                Mode = "Claim",
+                                Key = questGroupKey,
+                                Index = index
+                            }
+                        }))
                     end)
                 end
             end
@@ -120,11 +126,13 @@ local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
 -- 🎁 REDEEM CODES
 for _, code in ipairs(redeemCodes) do
     pcall(function()
-        GetFunction:InvokeServer({
-            Type = "Code",
-            Mode = "Redeem",
-            Code = code
-        })
+        GetFunction:InvokeServer(unpack({
+            {
+                Type = "Code",
+                Mode = "Redeem",
+                Code = code
+            }
+        }))
     end)
 end
 wait(2)
