@@ -20,12 +20,21 @@ local HttpService = game:GetService("HttpService")
 
 local function sendWebhook(data)
     local success, err = pcall(function()
-        HttpService:PostAsync(WebhookURL, HttpService:JSONEncode(data))
+        HttpService:RequestAsync({
+            Url = WebhookURL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode(data)
+        })
     end)
+
     if not success then
         warn("❌ Webhook error:", err)
     end
 end
+
 
 local function autoPlaceAndUpgrade()
     local summonList = {
@@ -154,49 +163,75 @@ local function tryGameResultActions()
     end)
 end
 
-local function reportStageResult()
-    local resultText = MainUI.ResultFrame.Result.ExpandFrame.TopFrame.BoxFrame
-        .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.StampFrame.StampFrame.Title.Text
+local function waitForResultText()
+    local VirtualInputManager = game:GetService("VirtualInputManager")
 
-    local username = Players.LocalPlayer.Name
-    local completedTime = os.date("%Y-%m-%d %H:%M:%S")
+    local resultFrame = MainUI:WaitForChild("ResultFrame", 10)
+    repeat task.wait() until resultFrame.Visible
 
-    local stats = MainUI.ResultFrame.Result.ExpandFrame.StatsFrame
-    local damage = stats and stats.DamageDealt and stats.DamageDealt.Text or "Unknown"
-    local timeTaken = stats and stats.TimeTaken and stats.TimeTaken.Text or "Unknown"
-    
-    local rewardFrame = MainUI.ResultFrame.Result.ExpandFrame.DropFrame
-    local rewards = {}
-    local totalCount = 0
+    local screenSize = workspace.CurrentCamera.ViewportSize
+    local centerX = screenSize.X / 2
+    local centerY = screenSize.Y / 2
 
-    for _, reward in pairs(rewardFrame:GetChildren()) do
-        if reward:IsA("Frame") and reward:FindFirstChild("Amount") and reward:FindFirstChild("ItemName") then
-            local amount = tonumber(reward.Amount.Text:match("%d+")) or 0
-            local name = reward.ItemName.Text
-            table.insert(rewards, name .. " x" .. amount)
-            totalCount += amount
+    local timeout = 10
+    local elapsed = 0
+
+    while elapsed < timeout do
+        -- Click middle of screen
+        pcall(function()
+            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
+            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
+        end)
+
+        local stampText = nil
+
+        pcall(function()
+            local stampFrame = MainUI.ResultFrame.Result.ExpandFrame.TopFrame.BoxFrame
+                .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup:FindFirstChild("StampFrame")
+
+            local innerStamp = stampFrame and stampFrame:FindFirstChild("StampFrame")
+            local title = innerStamp and innerStamp:FindFirstChild("Title")
+            if title then
+                stampText = title.Text
+                print("📘 Detected result text:", stampText)
+            end
+        end)
+
+        if stampText then
+            local normalized = stampText:lower()
+            if normalized == "victory" or normalized == "defeat" then
+                return normalized:sub(1, 1):upper() .. normalized:sub(2)
+            end
         end
+
+
+        task.wait(0.1)
+        elapsed += 0.1
     end
 
-    local stageInfo = MainUI.StageInfo.MapTitle.Text .. " - " .. MainUI.StageInfo.ActTitle.Text
+    return "Unknown"
+end
+
+
+
+local function reportStageResult(resultText)
+    local username = Players.LocalPlayer.Name
+    local completedTime = os.date("%Y-%m-%d %H:%M:%S")
 
     sendWebhook({
         username = "ASTDX Bot",
         embeds = {{
-            title = resultText,
-            description = "**Stage**: " .. stageInfo ..
-                         "\n**Damage**: " .. damage ..
-                         "\n**Time Taken**: " .. timeTaken ..
-                         "\n**Rewards**: " .. table.concat(rewards, ", ") ..
-                         " [`" .. totalCount .. "` total]",
+            title = resultText or "Unknown Result",
+            description = "**Stage ended with:** " .. (resultText or "Unknown"),
             color = resultText == "Victory" and 65280 or 16711680,
             footer = {
                 text = "Completed at " .. completedTime .. " | " .. username
             }
         }}
     })
-end
 
+    print("📤 Webhook sent for result:", resultText)
+end
 
 -- ✅ Initial vote before first match
 startVote()
@@ -205,8 +240,9 @@ startVote()
 while true do
     autoPlaceAndUpgrade()
     waitForResultFrame()
-    waitForButtonEnabled("Next")
+    
+    local resultText = waitForResultText()
+    reportStageResult(resultText)
     tryGameResultActions()
-    reportStageResult()
     task.wait(3)
 end
