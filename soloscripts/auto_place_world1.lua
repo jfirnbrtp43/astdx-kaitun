@@ -37,23 +37,95 @@ end
 
 
 local function autoPlaceAndUpgrade()
-    local summonList = {
-        { name = "Uryu", cf = CFrame.new(-73.682, 10.279, -33.302) },
-        { name = "Uryu", cf = CFrame.new(-76.248, 10.212, -33.382) },
-        { name = "Uryu", cf = CFrame.new(-75.015, 10.054, -35.915) },
-        { name = "Goku", cf = CFrame.new(-71.866, 3.759, -31.528) },
-        { name = "Goku", cf = CFrame.new(-70.710, 3.759, -33.567) },
-        { name = "Goku", cf = CFrame.new(-70.704, 3.759, -36.204) },
-        { name = "Goku", cf = CFrame.new(-69.109, 3.759, -31.374) },
+    local success, inventory = pcall(function()
+        return GetFunction:InvokeServer({ Type = "Inventory", Mode = "Units" })
+    end)
+    if not success or typeof(inventory) ~= "table" then
+        warn("❌ Failed to load inventory")
+        return
+    end
+
+    local equippedUnits = {}
+    for _, unit in ipairs(inventory) do
+        if unit.Equipped and tonumber(unit.Equipped) then
+            table.insert(equippedUnits, unit)
+        end
+    end
+
+    -- Collect all 4 star equipped units except Goku and Uryu
+    local fourStarUnits = {}
+    for _, unit in ipairs(equippedUnits) do
+        if unit.Rarity >= 4 and unit.Name ~= "Goku" and unit.Name ~= "Uryu" then
+            table.insert(fourStarUnits, unit)
+        end
+    end
+
+    local uryuCFs = {
+        CFrame.new(-73.682, 10.279, -33.302),
+        CFrame.new(-76.248, 10.212, -33.382),
+        CFrame.new(-75.015, 10.054, -35.915),
     }
+
+    local gokuCFs = {
+        CFrame.new(-71.866, 3.759, -31.528),
+        CFrame.new(-70.710, 3.759, -33.567),
+        CFrame.new(-70.704, 3.759, -36.204),
+        CFrame.new(-69.109, 3.759, -31.374),
+    }
+
+    local hillCFs = {
+        CFrame.new(-76.025, 10.428, -6.167),
+        CFrame.new(-73.503, 10.627, -6.572),
+        CFrame.new(-73.226, 10.620, -3.531),
+        CFrame.new(-76.118, 10.335, -2.948),
+    }
+
+    local groundCFs = {
+        CFrame.new(-67.611, 3.759, -39.095),
+        CFrame.new(-65.678, 3.759, -38.426),
+        CFrame.new(-67.910, 3.759, -35.677),
+        CFrame.new(-65.195, 3.759, -35.248),
+    }
+
+    local summonList = {}
+
+    -- Place Uryu exactly 3 times at fixed positions
+    for i = 1, #uryuCFs do
+        table.insert(summonList, { name = "Uryu", cf = uryuCFs[i] })
+    end
+
+    -- Place Goku exactly 4 times at fixed positions
+    for i = 1, #gokuCFs do
+        table.insert(summonList, { name = "Goku", cf = gokuCFs[i] })
+    end
+
+    -- Place each 4-star unit (max 4) according to their place type
+    for _, unit in ipairs(fourStarUnits) do
+        local placeType = unit.Place
+        local maxPlace = math.clamp(unit.Max or 3, 1, 4)
+        local coords = nil
+
+        if placeType == "Hill" then
+            coords = hillCFs
+        elseif placeType == "Ground" then
+            coords = groundCFs
+        else
+            warn("⚠️ Unknown place type for unit:", unit.Name)
+            continue
+        end
+
+        for i = 1, maxPlace do
+            if i > #coords then break end
+            table.insert(summonList, { name = unit.Name, cf = coords[i] })
+        end
+    end
 
     local placedUnits = {}
 
+    -- Place all units in summonList
     for _, info in ipairs(summonList) do
         local positionOccupied = false
-        local units = UnitFolder:GetChildren()
-
-        for _, unit in ipairs(units) do
+        for _, unit in ipairs(UnitFolder:GetChildren()) do
             if unit:IsA("Model") and unit:GetPrimaryPartCFrame()
                 and (unit.PrimaryPart.Position - info.cf.Position).Magnitude < 0.1 then
                 positionOccupied = true
@@ -61,9 +133,7 @@ local function autoPlaceAndUpgrade()
             end
         end
 
-        if positionOccupied then
-            continue
-        end
+        if positionOccupied then continue end
 
         local maxAttempts = 50
         local placed = false
@@ -86,18 +156,54 @@ local function autoPlaceAndUpgrade()
         end
     end
 
+    -- Upgrade priority:
+    -- 1) All Uryu units
     for _, unit in ipairs(placedUnits) do
-        local formData = FormInfo:InvokeServer(unit.Name)
-        local maxUpgrades = #formData
+        if unit.Name == "Uryu" then
+            local formData = FormInfo:InvokeServer(unit.Name)
+            local maxUpgrades = #formData
+            while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                pcall(function()
+                    GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
+                end)
+                task.wait(1)
+            end
+        end
+    end
 
-        while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
-            pcall(function()
-                GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
-            end)
-            task.wait(1)
+    -- 2) All 4-star units (except Goku and Uryu)
+    for _, unit in ipairs(placedUnits) do
+        for _, fsUnit in ipairs(fourStarUnits) do
+            if unit.Name == fsUnit.Name then
+                local formData = FormInfo:InvokeServer(unit.Name)
+                local maxUpgrades = #formData
+                while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                    pcall(function()
+                        GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
+                    end)
+                    task.wait(1)
+                end
+            end
+        end
+    end
+
+    -- 3) All Goku units
+    for _, unit in ipairs(placedUnits) do
+        if unit.Name == "Goku" then
+            local formData = FormInfo:InvokeServer(unit.Name)
+            local maxUpgrades = #formData
+            while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                pcall(function()
+                    GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
+                end)
+                task.wait(1)
+            end
         end
     end
 end
+
+
+
 
 local function waitForResultFrame()
     local resultFrame = MainUI:WaitForChild("ResultFrame")
