@@ -18,6 +18,13 @@ getgenv().AutoSummonConfig = {
 loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
 ]]--
 
+-- 🌐 SERVICES
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GetFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("GetFunction")
+local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("SummonDisplay")
+local banner1 = summonDisplay:FindFirstChild("StandardSummon")
+local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
 
 -- 🧠 LOAD CONFIG
 local config = getgenv().AutoSummonConfig or {}
@@ -107,13 +114,7 @@ end
 
 autoClaimQuests()
 
--- 🌐 SERVICES
-local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local GetFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("GetFunction")
-local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("SummonDisplay")
-local banner1 = summonDisplay:FindFirstChild("StandardSummon")
-local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
+
 
 -- 🎁 REDEEM CODES
 for _, code in ipairs(redeemCodes) do
