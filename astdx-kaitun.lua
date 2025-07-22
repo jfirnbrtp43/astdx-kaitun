@@ -38,7 +38,8 @@ local redeemCodes = config.RedeemCodes or {
     "FOLLOWS10KBREAD",
     "UPD2",
     "NEXTLIKEGOAL500K",
-    "THANKYOUFORLIKES123"
+    "THANKYOUFORLIKES123",
+    "MBSHUTDOWNB"
 }
 local autoSellSettings = config.AutoSellSettings or {
     T3 = false, S3 = false, N3 = false,
@@ -137,7 +138,7 @@ local function sendEmbedWebhook(title, description, color)
             ["color"] = color,
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["footer"] = {
-                ["text"] = "Requested by: " .. username
+                ["text"] = "**" .. username .. "**"
             }
         }}
     }
