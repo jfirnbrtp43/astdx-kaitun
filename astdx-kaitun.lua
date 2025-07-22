@@ -90,16 +90,18 @@ local function autoClaimQuests()
     end
 
     for key, questTypes in pairs(questData) do
-        for index, quest in pairs(questTypes) do
-            if quest.Completed and not quest.Claimed then
-                pcall(function()
-                    GetFunction:InvokeServer({
-                        Mode = "Claim",
-                        Type = "Quest",
-                        Key = key,
-                        Index = index
-                    })
-                end)
+        if typeof(questTypes) == "table" then
+            for index, quest in pairs(questTypes) do
+                if typeof(quest) == "table" and quest.Completed and not quest.Claimed then
+                    pcall(function()
+                        GetFunction:InvokeServer({
+                            Mode = "Claim",
+                            Type = "Quest",
+                            Key = key,
+                            Index = index
+                        })
+                    end)
+                end
             end
         end
     end
