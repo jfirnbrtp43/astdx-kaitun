@@ -88,6 +88,17 @@ if getgenv().AutoSummonRunning then
 end
 getgenv().AutoSummonRunning = true
 
+local function getGemCount()
+    local success, gems = pcall(function()
+        local label = game:GetService("Players").LocalPlayer
+            .PlayerGui.MainUI.MenuFrame.BottomFrame.BottomExpand
+            .CashFrame.Premium.ExpandFrame.TextLabel
+
+        return tonumber(label.Text:gsub(",", ""))
+    end)
+    return (success and gems) or 0
+end
+
 -- Main loop
 while getgenv().AutoSummonRunning do
     local success, inventory = pcall(function()
@@ -147,8 +158,17 @@ while getgenv().AutoSummonRunning do
         end
     end
 
-    if allDone then
-        Webhook.sendEmbedWebhook("✅ Auto-Summon Complete", "All target units obtained or not on banners.", 65280)
+    local currentGems = getGemCount()
+
+    if allDone or currentGems < 450 then
+        local reason = allDone and "All target units obtained." or "Not enough gems to continue (💎 " .. currentGems .. ")"
+        Webhook.sendEmbedWebhook("✅ Auto-Summon Stopped", reason .. "\nProceeding to Story Mode.", 65280)
+
+        -- Start auto story logic here
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/auto_story.lua"))()
+        end)
+
         break
     end
 

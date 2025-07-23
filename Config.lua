@@ -29,6 +29,8 @@ local defaultConfig = {
     }
 }
 
+EnableAutoStory = true,
+
 local userConfig = getgenv().AutoSummonConfig or {}
 
 -- Shallow merge user config with defaults
