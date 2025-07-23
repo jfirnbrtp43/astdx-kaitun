@@ -1,13 +1,11 @@
--- Kaitun Auto Summon Bootstrapper
-
 getgenv().AutoSummonConfig = {
     WebhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM",
     UseMultiSummon = true,
     CheckInterval = 3,
     TargetUnits = {
-        ["Rukia"] = 1,
+        ["Broly"] = 3,
         ["GokuEpic"] = 3,
-        ["Sanji"] = 1
+        ["Zeke"] = 1
     },
     AutoSellSettings = {
         T3 = true, S3 = false, N3 = true,
@@ -17,5 +15,11 @@ getgenv().AutoSummonConfig = {
     StoryDifficulty = "Hard"
 }
 
--- ✅ Run the main logic
+-- Wait for game to load before running main logic
+if not game:IsLoaded() then
+    print("Waiting for game to load...")
+    game.Loaded:Wait()
+end
+print("Game loaded, executing main script...")
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Main.lua"))()

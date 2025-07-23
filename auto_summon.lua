@@ -132,18 +132,6 @@ while getgenv().AutoSummonRunning do
             end
         end
 
-        if bannerToUse and not getgenv()._unitAnnounced then
-            getgenv()._unitAnnounced = {}
-        end
-
-        if bannerToUse and not getgenv()._unitAnnounced[unitName] then
-            Webhook.sendEmbedWebhook(
-                "📢 Unit Available on Banner",
-                "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
-                5793266
-            )
-            getgenv()._unitAnnounced[unitName] = true
-        end
     end
 
     local currentGems = getGemCount()
@@ -175,6 +163,12 @@ while getgenv().AutoSummonRunning do
 
         if summonSuccess then
             print("🎲 Summoned on banner:", bannerToUse, "| Rarity:", rarityFlag)
+
+            Webhook.sendEmbedWebhook(
+                "🎯 Summon",
+                "Unit: `" .. foundUnitName .. "` | Rarity: ⭐️" .. rarityFlag .. " | Banner: `" .. bannerToUse .. "`",
+                16776960
+            )
         else
             warn("⚠️ Summon failed:", summonResult)
             break
