@@ -19,6 +19,15 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kai
 
 ]]--
 
+local worldToScriptUrl = {
+    ["Innovation Island"] = "https://yourdomain.com/scripts/auto_story1.lua",
+    ["City of Voldstandig"] = "https://yourdomain.com/scripts/auto_story2.lua",
+    ["Future City (Ruins)"] = "https://yourdomain.com/scripts/auto_story3.lua",
+    ["Hidden Storm Village"] = "https://yourdomain.com/scripts/auto_story4.lua",
+    ["Giant Island"] = "https://yourdomain.com/scripts/auto_story5.lua",
+    ["City of York"] = "https://yourdomain.com/scripts/auto_story6.lua",
+}
+
 local configChunk, err = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Config.lua"))
 if not configChunk then
     error("Failed to load Config.lua chunk: ".. tostring(err))
