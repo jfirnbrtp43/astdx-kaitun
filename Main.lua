@@ -23,13 +23,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Wait for game to fully load before running main logic
-if not game:IsLoaded() then
-    print("Waiting for game to load...")
-    game.Loaded:Wait()
-end
-print("Game loaded, proceeding with script...")
-
+task.wait(15)
 
 -- Map of world names to placement script URLs
 local worldToScriptUrl = {
@@ -40,6 +34,8 @@ local worldToScriptUrl = {
     ["Giant Island"] = "https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/refs/heads/main/Place/auto_place_world5.lua",
     ["City of York"] = "https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/refs/heads/main/Place/auto_place_world6.lua",
 }
+
+
 
 -- Helper: Get current world/map name
 local function getCurrentWorld()
@@ -70,7 +66,7 @@ local function isInLobby()
     return summonDisplay:FindFirstChild("StandardSummon") or summonDisplay:FindFirstChild("StandardSummon2")
 end
 
-task.wait(15)
+
 
 -- Main logic
 if isInLobby() then
