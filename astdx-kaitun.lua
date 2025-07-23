@@ -17,11 +17,10 @@ getgenv().AutoSummonConfig = {
 }
 loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
 ]]--
-local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/yourrepo/Config.lua"))()
 
 
 -- 🧠 LOAD CONFIG
-local config = getgenv().AutoSummonConfig or {}
+local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/refs/heads/main/Config.lua"))()
 local targetUnits = Config.TargetUnits or {
     ["GokuEpic"] = 3,
     ["Sanji"] = 1
