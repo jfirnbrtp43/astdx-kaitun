@@ -13,7 +13,10 @@ local codes = {
     "FOLLOWS10KBREAD",
     "UPD2",
     "NEXTLIKEGOAL500K",
-    "THANKYOUFORLIKES123"
+    "THANKYOUFORLIKES123",
+    "MBSHUTDOWNB",
+    "THANKYOUFOR500MVISITS",
+    "2MGROUPMEMBERS"
 }
 
 for _, code in ipairs(codes) do

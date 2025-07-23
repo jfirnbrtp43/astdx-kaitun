@@ -40,7 +40,9 @@ local redeemCodes = config.RedeemCodes or {
     "UPD2",
     "NEXTLIKEGOAL500K",
     "THANKYOUFORLIKES123",
-    "MBSHUTDOWNB"
+    "MBSHUTDOWNB",
+    "THANKYOUFOR500MVISITS",
+    "2MGROUPMEMBERS"
 }
 local autoSellSettings = config.AutoSellSettings or {
     T3 = false, S3 = false, N3 = false,

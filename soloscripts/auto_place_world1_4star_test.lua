@@ -9,6 +9,7 @@ local UnitFolder = workspace:WaitForChild("UnitFolder")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local MainUI = PlayerGui:WaitForChild("MainUI")
+local matchEnded = false
 
 local WebhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM"
 
@@ -81,10 +82,10 @@ local function autoPlaceAndUpgrade()
     }
 
     local groundCFs = {
-        CFrame.new(-67.611, 3.759, -39.095),
-        CFrame.new(-65.678, 3.759, -38.426),
-        CFrame.new(-67.910, 3.759, -35.677),
-        CFrame.new(-65.195, 3.759, -35.248),
+        CFrame.new(-79.88250732421875, 3.7593679428100586, -62.93911361694336),
+        CFrame.new(-79.89116668701172, 3.7593679428100586, -60.192501068115234),
+        CFrame.new(-81.67688751220703, 3.7593679428100586, -61.904972076416016),
+        CFrame.new(-77.65828704833984, 3.7593679428100586, -61.29658126831055),
     }
 
     local summonList = {}
@@ -163,6 +164,11 @@ local function autoPlaceAndUpgrade()
             local formData = FormInfo:InvokeServer(unit.Name)
             local maxUpgrades = #formData
             while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                local resultFrame = MainUI:FindFirstChild("ResultFrame")
+                if resultFrame and resultFrame.Visible then
+                    warn("🛑 Match ended. Stopping upgrade for", unit.Name)
+                    break
+                end
                 pcall(function()
                     GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
                 end)
@@ -178,6 +184,11 @@ local function autoPlaceAndUpgrade()
                 local formData = FormInfo:InvokeServer(unit.Name)
                 local maxUpgrades = #formData
                 while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                    local resultFrame = MainUI:FindFirstChild("ResultFrame")
+                    if resultFrame and resultFrame.Visible then
+                        warn("🛑 Match ended. Stopping upgrade for", unit.Name)
+                        break
+                    end
                     pcall(function()
                         GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
                     end)
@@ -193,6 +204,11 @@ local function autoPlaceAndUpgrade()
             local formData = FormInfo:InvokeServer(unit.Name)
             local maxUpgrades = #formData
             while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                local resultFrame = MainUI:FindFirstChild("ResultFrame")
+                if resultFrame and resultFrame.Visible then
+                    warn("🛑 Match ended. Stopping upgrade for", unit.Name)
+                    break
+                end
                 pcall(function()
                     GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
                 end)
@@ -208,13 +224,8 @@ end
 local function waitForResultFrame()
     local resultFrame = MainUI:WaitForChild("ResultFrame")
     repeat task.wait() until resultFrame.Visible
+    matchEnded = true -- ✅ stop upgrades now
     return resultFrame
-end
-
-local function waitForButtonEnabled(name)
-    local buttonPath = MainUI.ResultFrame.Result.ExpandFrame.ButtonFrame.ButtonExpand
-    local disabledFrame = buttonPath[name].ButtonDesign.ExpandFrame.DisabledFrame
-    repeat task.wait() until not disabledFrame.Visible
 end
 
 -- ✅ Start Vote Function
