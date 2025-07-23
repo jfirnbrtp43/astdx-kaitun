@@ -2,19 +2,22 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 local Webhook = {}
+local currentWebhookURL = ""
+
+function Webhook.setWebhookURL(url)
+    currentWebhookURL = url or ""
+end
 
 function Webhook.sendEmbedWebhook(title, description, color)
-    local config = getgenv().AutoSummonConfig or {}
-    local webhookURL = config.WebhookURL or ""
-    if webhookURL == "" then return end
+    if currentWebhookURL == "" then return end
 
     local username = Players.LocalPlayer and Players.LocalPlayer.Name or "Unknown User"
 
     local data = {
         ["username"] = "ASTDX Bot",
         ["embeds"] = {{
-            ["title"] = title,
-            ["description"] = description,
+            ["title"] = title or "No Title",
+            ["description"] = description or "No Description",
             ["color"] = tonumber(color) or 65280,
             ["footer"] = {
                 ["text"] = "**" .. username .. "**"
@@ -25,7 +28,7 @@ function Webhook.sendEmbedWebhook(title, description, color)
 
     local success, err = pcall(function()
         HttpService:RequestAsync({
-            Url = webhookURL,
+            Url = currentWebhookURL,
             Method = "POST",
             Headers = {
                 ["Content-Type"] = "application/json"
