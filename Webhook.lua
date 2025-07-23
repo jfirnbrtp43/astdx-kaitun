@@ -20,7 +20,7 @@ function Webhook.sendEmbedWebhook(title, description, color)
             ["description"] = description or "No Description",
             ["color"] = tonumber(color) or 65280,
             ["footer"] = {
-                ["text"] = "**" .. username .. "**"
+                ["text"] = username
             },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
