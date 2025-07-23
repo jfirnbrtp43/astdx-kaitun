@@ -54,6 +54,7 @@ local function getLastUnlockedStory()
 end
 
 local function teleportToLatestStory()
+    local storyDifficulty = getgenv().AutoSummonConfig and getgenv().AutoSummonConfig.StoryDifficulty or "Normal"
     local world, chapter = getLastUnlockedStory()
     if not world or not chapter then
         warn("Could not find last unlocked story.")
@@ -68,7 +69,7 @@ local function teleportToLatestStory()
             Chapter = chapter,
             Type = "Lobby",
             Name = world,
-            Difficulty = "Normal",
+            Difficulty = storyDifficulty,
             Mode = "Pod",
             Friend = false,
             Update = true

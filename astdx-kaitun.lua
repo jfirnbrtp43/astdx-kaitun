@@ -13,7 +13,8 @@ getgenv().AutoSummonConfig = {
         T3 = true, S3 = false, N3 = true,
         T4 = false, S4 = false, N4 = false,
         T5 = false, S5 = false, N5 = false
-    }
+    },
+    StoryDifficulty = "Hard"
 }
 
 -- ✅ Run the main logic
