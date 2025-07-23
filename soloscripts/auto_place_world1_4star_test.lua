@@ -65,6 +65,7 @@ local function autoPlaceAndUpgrade()
         CFrame.new(-73.682, 10.279, -33.302),
         CFrame.new(-76.248, 10.212, -33.382),
         CFrame.new(-75.015, 10.054, -35.915),
+        CFrame.new(-72.336, 9.712, -35.338)
     }
 
     local gokuCFs = {
@@ -89,6 +90,7 @@ local function autoPlaceAndUpgrade()
     }
 
     local summonList = {}
+
 
     -- Place Uryu exactly 3 times at fixed positions
     for i = 1, #uryuCFs do
@@ -177,7 +179,26 @@ local function autoPlaceAndUpgrade()
         end
     end
 
-    -- 2) All 4-star units (except Goku and Uryu)
+    -- 2) All Goku units
+    for _, unit in ipairs(placedUnits) do
+        if unit.Name == "Goku" then
+            local formData = FormInfo:InvokeServer(unit.Name)
+            local maxUpgrades = #formData
+            while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                local resultFrame = MainUI:FindFirstChild("ResultFrame")
+                if resultFrame and resultFrame.Visible then
+                    warn("🛑 Match ended. Stopping upgrade for", unit.Name)
+                    break
+                end
+                pcall(function()
+                    GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
+                end)
+                task.wait(1)
+            end
+        end
+    end
+
+    -- 3) All 4-star units (except Goku and Uryu)
     for _, unit in ipairs(placedUnits) do
         for _, fsUnit in ipairs(fourStarUnits) do
             if unit.Name == fsUnit.Name then
@@ -198,24 +219,7 @@ local function autoPlaceAndUpgrade()
         end
     end
 
-    -- 3) All Goku units
-    for _, unit in ipairs(placedUnits) do
-        if unit.Name == "Goku" then
-            local formData = FormInfo:InvokeServer(unit.Name)
-            local maxUpgrades = #formData
-            while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
-                local resultFrame = MainUI:FindFirstChild("ResultFrame")
-                if resultFrame and resultFrame.Visible then
-                    warn("🛑 Match ended. Stopping upgrade for", unit.Name)
-                    break
-                end
-                pcall(function()
-                    GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
-                end)
-                task.wait(1)
-            end
-        end
-    end
+    
 end
 
 
