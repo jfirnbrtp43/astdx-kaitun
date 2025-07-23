@@ -19,7 +19,15 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kai
 
 ]]--
 
-local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Config.lua"))()
+local configChunk, err = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Config.lua"))
+if not configChunk then
+    error("Failed to load Config.lua chunk: ".. tostring(err))
+end
+local Config = configChunk()
+if not Config then
+    error("Config.lua chunk did not return a table")
+end
+
 local Helpers = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Helpers.lua"))()
 local Webhook = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Webhook.lua"))()
 
