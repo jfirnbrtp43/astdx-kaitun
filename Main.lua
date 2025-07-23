@@ -22,6 +22,9 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kai
 local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Config.lua"))()
 local Helpers = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Helpers.lua"))()
 local Webhook = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Webhook.lua"))()
+assert(Webhook, "Failed to load Webhook module")
+print(Webhook.setWebhookURL, Webhook.sendEmbedWebhook)
+
 
 -- Access config values from Config table
 local targetUnits = Config.TargetUnits or {}
