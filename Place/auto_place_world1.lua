@@ -244,7 +244,7 @@ end
 
 -- ✅ Start Vote Function
 local function startVote()
-    task.wait(5)
+    task.wait(2.5)
     pcall(function()
         Remotes:WaitForChild("GameStuff"):FireServer("StartVoteYes")
     end)

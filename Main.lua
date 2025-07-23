@@ -23,41 +23,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local function waitForWorldName(timeoutSeconds)
-    timeoutSeconds = timeoutSeconds or 10
-    local startTime = os.time()
-
-    while true do
-        local success, mapName = pcall(function()
-            return PlayerGui
-                :WaitForChild("GU")
-                :WaitForChild("MenuFrame")
-                :WaitForChild("MapFrame")
-                :WaitForChild("MapExpand")
-                :WaitForChild("BoxFrame")
-                :WaitForChild("InfoFrame2")
-                :WaitForChild("InnerFrame")
-                :WaitForChild("CanvasFrame")
-                :WaitForChild("CanvasGroup")
-                :WaitForChild("TopFrame")
-                :WaitForChild("MapTitle").Text
-        end)
-
-        if success and mapName and mapName ~= "" and mapName ~= "Unknown" then
-            return mapName
-        end
-
-        if os.time() - startTime > timeoutSeconds then
-            warn("Timeout reached while waiting for world name UI.")
-            return "Unknown"
-        end
-
-        task.wait(0.5) -- wait half a second before retrying
-    end
+-- Wait for game to fully load before running main logic
+if not game:IsLoaded() then
+    print("Waiting for game to load...")
+    game.Loaded:Wait()
 end
+print("Game loaded, proceeding with script...")
 
-local currentWorld = waitForWorldName(15) -- wait up to 15 seconds
-print("🌍 Detected Story World:", currentWorld)
 
 -- Map of world names to placement script URLs
 local worldToScriptUrl = {
@@ -97,6 +69,8 @@ local function isInLobby()
 
     return summonDisplay:FindFirstChild("StandardSummon") or summonDisplay:FindFirstChild("StandardSummon2")
 end
+
+task.wait(7)
 
 -- Main logic
 if isInLobby() then
