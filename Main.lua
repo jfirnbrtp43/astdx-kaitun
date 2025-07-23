@@ -41,7 +41,7 @@ local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
 
 -- Use your webhook function from Webhook module
 -- e.g., Webhook.sendEmbedWebhook(title, description, color)
-Webhook.setWebhookURL(webhookURL)
+Webhook.setWebhookURL(Config.WebhookURL or "")
 
 -- Redeem codes
 for _, code in ipairs(redeemCodes) do

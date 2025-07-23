@@ -2,7 +2,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 local Webhook = {}
-local currentWebhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM"
+local currentWebhookURL = ""
 
 function Webhook.setWebhookURL(url)
     currentWebhookURL = url or ""
