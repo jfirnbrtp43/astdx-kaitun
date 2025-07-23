@@ -22,7 +22,7 @@ function Webhook.sendEmbedWebhook(title, description, color)
             ["footer"] = {
                 ["text"] = "**" .. username .. "**"
             },
-            ["timestamp"] = DateTime.now():ToIso8601()  -- ✅ Fix here
+            ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
     }
 
