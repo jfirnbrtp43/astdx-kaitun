@@ -17,19 +17,19 @@ getgenv().AutoSummonConfig = {
 }
 loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
 ]]--
-
+local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/yourrepo/Config.lua"))()
 
 
 -- 🧠 LOAD CONFIG
 local config = getgenv().AutoSummonConfig or {}
-local targetUnits = config.TargetUnits or {
+local targetUnits = Config.TargetUnits or {
     ["GokuEpic"] = 3,
     ["Sanji"] = 1
 }
-local useMultiSummon = config.UseMultiSummon or false
-local checkInterval = config.CheckInterval or 3
-local webhookURL = config.WebhookURL or ""
-local redeemCodes = config.RedeemCodes or {
+local useMultiSummon = Config.UseMultiSummon or false
+local checkInterval = Config.CheckInterval or 3
+local webhookURL = Config.WebhookURL or ""
+local redeemCodes = Config.RedeemCodes or {
     "AFIRSTTIME3001",
     "FREENIMBUSMOUNT",
     "VERYHIGHLIKEB",
@@ -44,7 +44,7 @@ local redeemCodes = config.RedeemCodes or {
     "THANKYOUFOR500MVISITS",
     "2MGROUPMEMBERS"
 }
-local autoSellSettings = config.AutoSellSettings or {
+local autoSellSettings = Config.AutoSellSettings or {
     T3 = false, S3 = false, N3 = false,
     T4 = false, S4 = false, N4 = false,
     T5 = false, S5 = false, N5 = false

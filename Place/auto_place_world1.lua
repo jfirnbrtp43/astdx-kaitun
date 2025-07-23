@@ -19,6 +19,19 @@ end
 
 local HttpService = game:GetService("HttpService")
 
+local function getMapAndArc()
+    local mapTitlePath = MainUI.GU.MenuFrame.MapFrame.MapExpand.BoxFrame
+        .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.TopFrame.MapTitle
+    local arcTitlePath = MainUI.GU.MenuFrame.MapFrame.MapExpand.BoxFrame
+        .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.TopFrame.ActTitle
+
+    local mapTitle = mapTitlePath and mapTitlePath.Text or "Unknown Map"
+    local arcTitle = arcTitlePath and arcTitlePath.Text or "Unknown Arc"
+    
+    return mapTitle, arcTitle
+end
+
+
 local function sendWebhook(data)
     local success, err = pcall(function()
         HttpService:RequestAsync({
@@ -65,6 +78,7 @@ local function autoPlaceAndUpgrade()
         CFrame.new(-73.682, 10.279, -33.302),
         CFrame.new(-76.248, 10.212, -33.382),
         CFrame.new(-75.015, 10.054, -35.915),
+        CFrame.new(-72.336, 9.712, -35.338)
     }
 
     local gokuCFs = {
@@ -82,13 +96,14 @@ local function autoPlaceAndUpgrade()
     }
 
     local groundCFs = {
-        CFrame.new(-67.611, 3.759, -39.095),
-        CFrame.new(-65.678, 3.759, -38.426),
-        CFrame.new(-67.910, 3.759, -35.677),
-        CFrame.new(-65.195, 3.759, -35.248),
+        CFrame.new(-79.88250732421875, 3.7593679428100586, -62.93911361694336),
+        CFrame.new(-79.89116668701172, 3.7593679428100586, -60.192501068115234),
+        CFrame.new(-81.67688751220703, 3.7593679428100586, -61.904972076416016),
+        CFrame.new(-77.65828704833984, 3.7593679428100586, -61.29658126831055),
     }
 
     local summonList = {}
+
 
     -- Place Uryu exactly 3 times at fixed positions
     for i = 1, #uryuCFs do
@@ -177,7 +192,26 @@ local function autoPlaceAndUpgrade()
         end
     end
 
-    -- 2) All 4-star units (except Goku and Uryu)
+    -- 2) All Goku units
+    for _, unit in ipairs(placedUnits) do
+        if unit.Name == "Goku" then
+            local formData = FormInfo:InvokeServer(unit.Name)
+            local maxUpgrades = #formData
+            while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
+                local resultFrame = MainUI:FindFirstChild("ResultFrame")
+                if resultFrame and resultFrame.Visible then
+                    warn("🛑 Match ended. Stopping upgrade for", unit.Name)
+                    break
+                end
+                pcall(function()
+                    GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
+                end)
+                task.wait(1)
+            end
+        end
+    end
+
+    -- 3) All 4-star units (except Goku and Uryu)
     for _, unit in ipairs(placedUnits) do
         for _, fsUnit in ipairs(fourStarUnits) do
             if unit.Name == fsUnit.Name then
@@ -198,28 +232,8 @@ local function autoPlaceAndUpgrade()
         end
     end
 
-    -- 3) All Goku units
-    for _, unit in ipairs(placedUnits) do
-        if unit.Name == "Goku" then
-            local formData = FormInfo:InvokeServer(unit.Name)
-            local maxUpgrades = #formData
-            while (unit:GetAttribute("UpgradeLevel") or 0) < maxUpgrades do
-                local resultFrame = MainUI:FindFirstChild("ResultFrame")
-                if resultFrame and resultFrame.Visible then
-                    warn("🛑 Match ended. Stopping upgrade for", unit.Name)
-                    break
-                end
-                pcall(function()
-                    GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
-                end)
-                task.wait(1)
-            end
-        end
-    end
+    
 end
-
-
-
 
 local function waitForResultFrame()
     local resultFrame = MainUI:WaitForChild("ResultFrame")
@@ -334,12 +348,18 @@ end
 local function reportStageResult(resultText)
     local username = Players.LocalPlayer.Name
     local completedTime = os.date("%Y-%m-%d %H:%M:%S")
+    
+    local mapName, arcName = getMapAndArc()
 
     sendWebhook({
         username = "ASTDX Bot",
         embeds = {{
             title = resultText or "Unknown Result",
-            description = "**Stage ended with:** " .. (resultText or "Unknown"),
+            description = table.concat({
+                "**Stage ended with:** " .. (resultText or "Unknown"),
+                "**World:** " .. mapName,
+                "**Arc:** " .. arcName,
+            }, "\n"),
             color = resultText == "Victory" and 65280 or 16711680,
             footer = {
                 text = "Completed at " .. completedTime .. " | " .. username
@@ -347,7 +367,7 @@ local function reportStageResult(resultText)
         }}
     })
 
-    print("📤 Webhook sent for result:", resultText)
+    print("📤 Webhook sent for result:", resultText, "📍", mapName, "-", arcName)
 end
 
 -- ✅ Initial vote before first match
