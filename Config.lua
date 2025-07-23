@@ -29,7 +29,7 @@ local defaultConfig = {
     }
 }
 
-EnableAutoStory = true,
+EnableAutoStory = true
 
 local userConfig = getgenv().AutoSummonConfig or {}
 

@@ -22,8 +22,19 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kai
 local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Config.lua"))()
 local Helpers = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Helpers.lua"))()
 local Webhook = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Webhook.lua"))()
-assert(Webhook, "Failed to load Webhook module")
-print(Webhook.setWebhookURL, Webhook.sendEmbedWebhook)
+
+if not Webhook then
+    error("Failed to load Webhook module!")
+end
+
+if type(Webhook.setWebhookURL) ~= "function" then
+    error("Webhook.setWebhookURL is not a function!")
+end
+
+if type(Webhook.sendEmbedWebhook) ~= "function" then
+    error("Webhook.sendEmbedWebhook is not a function!")
+end
+
 
 
 -- Access config values from Config table
