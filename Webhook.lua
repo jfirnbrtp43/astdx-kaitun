@@ -1,25 +1,31 @@
--- Webhook.lua
 local HttpService = game:GetService("HttpService")
-local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/yourrepo/Config.lua"))()
+local Players = game:GetService("Players")
 
-local function sendEmbedWebhook(title, description, color)
-    if Config.WebhookURL == "" then return end
-    local username = game.Players.LocalPlayer and game.Players.LocalPlayer.Name or "Unknown User"
+local Webhook = {}
+
+function Webhook.sendEmbedWebhook(title, description, color)
+    local config = getgenv().AutoSummonConfig or {}
+    local webhookURL = config.WebhookURL or ""
+    if webhookURL == "" then return end
+
+    local username = Players.LocalPlayer and Players.LocalPlayer.Name or "Unknown User"
+
     local data = {
+        ["username"] = "ASTDX Bot",
         ["embeds"] = {{
             ["title"] = title,
             ["description"] = description,
-            ["color"] = color,
-            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["color"] = tonumber(color) or 65280,
             ["footer"] = {
                 ["text"] = "**" .. username .. "**"
-            }
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
 
-    pcall(function()
+    local success, err = pcall(function()
         HttpService:RequestAsync({
-            Url = Config.WebhookURL,
+            Url = webhookURL,
             Method = "POST",
             Headers = {
                 ["Content-Type"] = "application/json"
@@ -27,8 +33,10 @@ local function sendEmbedWebhook(title, description, color)
             Body = HttpService:JSONEncode(data)
         })
     end)
+
+    if not success then
+        warn("❌ Webhook Error:", err)
+    end
 end
 
-return {
-    sendEmbedWebhook = sendEmbedWebhook
-}
+return Webhook
