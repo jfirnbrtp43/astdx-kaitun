@@ -343,8 +343,6 @@ local function waitForResultText()
     return "Unknown"
 end
 
-
-
 local function reportStageResult(resultText)
     local username = Players.LocalPlayer.Name
     local completedTime = os.date("%Y-%m-%d %H:%M:%S")

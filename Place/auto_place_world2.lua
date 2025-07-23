@@ -121,7 +121,14 @@ local function autoPlaceAndUpgrade()
             if nameFilter(unit.Name) then
                 local form = FormInfo:InvokeServer(unit.Name)
                 local maxUp = #form
-                while (unit:GetAttribute("UpgradeLevel") or 0) < maxUp and not matchEnded do
+                while (unit:GetAttribute("UpgradeLevel") or 0) < maxUp do
+                    -- 🛑 Check for match end dynamically
+                    local resultFrame = MainUI:FindFirstChild("ResultFrame")
+                    if resultFrame and resultFrame.Visible then
+                        warn("🛑 Match ended. Stopping upgrade for", unit.Name)
+                        return
+                    end
+
                     pcall(function()
                         GetFunction:InvokeServer({ Type = "GameStuff" }, { "Upgrade", unit })
                     end)
@@ -130,6 +137,7 @@ local function autoPlaceAndUpgrade()
             end
         end
     end
+
 
     upgradeUnit(function(name) return name == "Uryu" end)
     upgradeUnit(function(name) return name == "Goku" end)
