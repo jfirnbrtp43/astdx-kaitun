@@ -1,56 +1,39 @@
---[[
-getgenv().AutoSummonConfig = {
-    WebhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM",
-    UseMultiSummon = true,
-    CheckInterval = 3,
-    TargetUnits = {
-        ["Rukia"] = 1,
-        ["GokuEpic"] = 3,
-        ["Sanji"] = 1
-    },
-    -- T = Trait, S = Shiny, N = Normal
-    AutoSellSettings = {
-        T3 = true, S3 = false, N3 = true,
-        T4 = false, S4 = false, N4 = false,
-        T5 = false, S5 = false, N5 = false
-    }
-}
-loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/astdx-kaitun.lua"))()
-]]--
+local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Config.lua"))()
+local Helpers = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Helpers.lua"))()
+local Webhook = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/main/Webhook.lua"))()
 
-
--- 🧠 LOAD CONFIG
-local Config = loadstring(game:HttpGet("https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/refs/heads/main/Config.lua"))()
-local targetUnits = Config.TargetUnits or {
-    ["GokuEpic"] = 3,
-    ["Sanji"] = 1
-}
+-- Access config values from Config table
+local targetUnits = Config.TargetUnits or {}
 local useMultiSummon = Config.UseMultiSummon or false
 local checkInterval = Config.CheckInterval or 3
 local webhookURL = Config.WebhookURL or ""
-local redeemCodes = Config.RedeemCodes or {
-    "AFIRSTTIME3001",
-    "FREENIMBUSMOUNT",
-    "VERYHIGHLIKEB",
-    "UPD1",
-    "LIKEF5",
-    "THREEHUNDREDTHOUSANDPLAYERS",
-    "FOLLOWS10KBREAD",
-    "UPD2",
-    "NEXTLIKEGOAL500K",
-    "THANKYOUFORLIKES123",
-    "MBSHUTDOWNB",
-    "THANKYOUFOR500MVISITS",
-    "2MGROUPMEMBERS"
-}
-local autoSellSettings = Config.AutoSellSettings or {
-    T3 = false, S3 = false, N3 = false,
-    T4 = false, S4 = false, N4 = false,
-    T5 = false, S5 = false, N5 = false
-}
+local redeemCodes = Config.RedeemCodes or {}
+local autoSellSettings = Config.AutoSellSettings or {}
 
+-- Roblox services
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GetFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("GetFunction")
+local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("SummonDisplay")
+local banner1 = summonDisplay:FindFirstChild("StandardSummon")
+local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
 
--- Enable Game Settings
+-- Use your webhook function from Webhook module
+-- e.g., Webhook.sendEmbedWebhook(title, description, color)
+-- You can override the webhook URL if needed
+Webhook.setWebhookURL(webhookURL)
+
+-- Redeem codes
+for _, code in ipairs(redeemCodes) do
+    pcall(function()
+        GetFunction:InvokeServer({
+            { Type = "Code", Mode = "Redeem", Code = code }
+        })
+    end)
+end
+task.wait(2)
+
+-- Apply game settings (you can move this to a Utils module too if you want)
 local function applyGameSettings()
     local settingsList = {
         { Auto = true },
@@ -78,124 +61,22 @@ end
 
 applyGameSettings()
 
--- 🎯 Auto Claim Completed Quests
-local function autoClaimQuests()
-    local args = {
-        {
-            Type = "Quest",
-            Mode = "Get"
-        }
-    }
-
-    local success, questData = pcall(function()
-        return GetFunction:InvokeServer(unpack(args))
-    end)
-
-    if not success or typeof(questData) ~= "table" then return end
-
-    for questGroupKey, questGroup in pairs(questData) do
-        if typeof(questGroup) == "table" and typeof(questGroup.Quests) == "table" then
-            for index, quest in ipairs(questGroup.Quests) do
-                if quest.IsComplete == true and quest.Progress >= quest.Goal then
-                    print("🎯 Claiming quest:", quest.Name)
-                    pcall(function()
-                        GetFunction:InvokeServer(unpack({
-                            {
-                                Type = "Quest",
-                                Mode = "Claim",
-                                Key = questGroupKey,
-                                Index = index
-                            }
-                        }))
-                    end)
-                end
-            end
-        end
-    end
-end
-
-autoClaimQuests()
-
--- 🌐 SERVICES
-local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local GetFunction = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("GetFunction")
-local summonDisplay = ReplicatedStorage:WaitForChild("Mods"):WaitForChild("SummonDisplay")
-local banner1 = summonDisplay:FindFirstChild("StandardSummon")
-local banner2 = summonDisplay:FindFirstChild("StandardSummon2")
-
--- 🎁 REDEEM CODES
-for _, code in ipairs(redeemCodes) do
-    pcall(function()
-        GetFunction:InvokeServer(unpack({
-            {
-                Type = "Code",
-                Mode = "Redeem",
-                Code = code
-            }
-        }))
-    end)
-end
-wait(2)
-
--- 🔁 WEBHOOK SENDER
-local function sendEmbedWebhook(title, description, color)
-    if webhookURL == "" then return end
-    local username = game.Players.LocalPlayer and game.Players.LocalPlayer.Name or "Unknown User"
-    local data = {
-        ["embeds"] = {{
-            ["title"] = title,
-            ["description"] = description,
-            ["color"] = color,
-            ["timestamp"] = DateTime.now():ToIsoDate(),
-            ["footer"] = {
-                ["text"] = "**" .. username .. "**"
-            }
-        }}
-    }
-
-    pcall(function()
-        HttpService:RequestAsync({
-            Url = webhookURL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode(data)
-        })
-    end)
-end
-
--- 🛑 KILL PREVIOUS RUNS
+-- Kill previous runs if any
 if getgenv().AutoSummonRunning then
     getgenv().AutoSummonRunning = false
     task.wait(0.5)
 end
 getgenv().AutoSummonRunning = true
 
--- 🔎 HELPERS
-local function isUnitInBanner(bannerFolder, unitName, starLevel)
-    if not bannerFolder then return false end
-    local starFolder = bannerFolder:FindFirstChild(starLevel)
-    if not starFolder then return false end
-    return starFolder:FindFirstChild(unitName) ~= nil
-end
-
-local secretUnits = {
-    ["Kokushibo"] = "StandardSummon2",
-    ["Chrollo"] = "StandardSummon"
-}
-
-local function isSecretUnit(unitName)
-    return secretUnits[unitName] ~= nil
-end
-
--- 🔁 MAIN LOOP
-while true do
+-- Main loop
+while getgenv().AutoSummonRunning do
     local success, inventory = pcall(function()
         return GetFunction:InvokeServer({ Type = "Inventory", Mode = "Units" })
     end)
-    if not success or not inventory then wait(checkInterval) continue end
+    if not success or not inventory then
+        task.wait(checkInterval)
+        continue
+    end
 
     local allDone = true
     local bannerToUse, rarityFlag, foundUnitName = nil, nil, nil
@@ -206,55 +87,52 @@ while true do
         for _, unit in pairs(inventory) do
             if unit.Name == unitName then ownedCount += 1 end
         end
-        print("📦 You own", ownedCount, unitName)
-        if ownedCount >= targetAmount then continue end
 
-        if isSecretUnit(unitName) then
-            bannerToUse = secretUnits[unitName]
+        print("📦 You own", ownedCount, unitName)
+        if ownedCount >= targetAmount then
+            continue
+        end
+
+        if Helpers.isSecretUnit(unitName) then
+            bannerToUse = Helpers.secretUnits[unitName]
             rarityFlag = "Secret"
             foundUnitName = unitName
             allDone = false
             break
         else
             for _, rarity in ipairs(rarityOrder) do
-                if isUnitInBanner(banner1, unitName, rarity) then
+                if Helpers.isUnitInBanner(banner1, unitName, rarity) then
                     bannerToUse, rarityFlag, foundUnitName = "StandardSummon", rarity, unitName
                     allDone = false
                     break
-                elseif isUnitInBanner(banner2, unitName, rarity) then
+                elseif Helpers.isUnitInBanner(banner2, unitName, rarity) then
                     bannerToUse, rarityFlag, foundUnitName = "StandardSummon2", rarity, unitName
                     allDone = false
                     break
                 end
             end
+        end
 
-            if bannerToUse and not getgenv()._unitAnnounced then
-                getgenv()._unitAnnounced = {}
-            end
+        if bannerToUse and not getgenv()._unitAnnounced then
+            getgenv()._unitAnnounced = {}
+        end
 
-            if bannerToUse and not getgenv()._unitAnnounced[unitName] then
-                sendEmbedWebhook(
-                    "📢 Unit Available on Banner",
-                    "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
-                    5793266
-                )
-                getgenv()._unitAnnounced[unitName] = true
-            end
+        if bannerToUse and not getgenv()._unitAnnounced[unitName] then
+            Webhook.sendEmbedWebhook(
+                "📢 Unit Available on Banner",
+                "**" .. unitName .. "** (⭐️" .. rarityFlag .. ") is on `" .. bannerToUse .. "`.",
+                5793266
+            )
+            getgenv()._unitAnnounced[unitName] = true
         end
     end
 
     if allDone then
-        sendEmbedWebhook("✅ Auto-Summon Complete", "All target units obtained or not on banners.", 65280)
+        Webhook.sendEmbedWebhook("✅ Auto-Summon Complete", "All target units obtained or not on banners.", 65280)
         break
     end
 
     if bannerToUse and foundUnitName then
-        local autoTable = {
-            T3 = false, S3 = false, N3 = false,
-            T4 = false, S4 = false, N4 = false,
-            T5 = false, S5 = false, N5 = false
-        }
-
         local summonArgs = {{
             Type = "Gacha",
             Auto = autoSellSettings,
@@ -275,8 +153,8 @@ while true do
         end
     else
         print("⏳ No target units currently available on banners, waiting...")
-        wait(10)
+        task.wait(10)
     end
 
-    wait(checkInterval)
+    task.wait(checkInterval)
 end
