@@ -70,7 +70,7 @@ local function isInLobby()
     return summonDisplay:FindFirstChild("StandardSummon") or summonDisplay:FindFirstChild("StandardSummon2")
 end
 
-task.wait(7)
+task.wait(15)
 
 -- Main logic
 if isInLobby() then
