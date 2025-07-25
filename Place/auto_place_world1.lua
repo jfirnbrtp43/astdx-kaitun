@@ -20,6 +20,7 @@ end
 
 local HttpService = game:GetService("HttpService")
 
+
 local function getMapAndArc()
     local mapTitlePath = GU.MenuFrame.MapFrame.MapExpand.BoxFrame
         .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.TopFrame.MapTitle
@@ -259,40 +260,24 @@ end)
 
 -- 🔁 Game Result Handling
 local function tryGameResultActions()
-    for _ = 1, 3 do
-        local success = pcall(function()
-            GetFunction:InvokeServer({
-                Type = "Game",
-                Index = "Level",
-                Mode = "Reward"
-            })
+    local argsList = {
+        { Type = "Game", Index = "Level", Mode = "Reward" },   -- Next
+        { Type = "Game", Index = "Replay", Mode = "Reward" },  -- Replay
+        { Type = "Game", Index = "Return", Mode = "Reward" }   -- Return
+    }
+
+    for i, args in ipairs(argsList) do
+        local success, response = pcall(function()
+            return GetFunction:InvokeServer(unpack({args}))
         end)
-        if success then
-            startVote() -- ✅ Restart vote after Next
+        print(`🧪 Attempt {i}:`, success, response)
+
+        if success and response ~= nil then
+            startVote()
             return
         end
         task.wait(1)
     end
-
-    local replaySuccess = pcall(function()
-        GetFunction:InvokeServer({
-            Type = "Game",
-            Index = "Replay",
-            Mode = "Reward"
-        })
-    end)
-    if replaySuccess then
-        startVote() -- ✅ Restart vote after Replay
-        return
-    end
-
-    pcall(function()
-        GetFunction:InvokeServer({
-            Type = "Game",
-            Index = "Return",
-            Mode = "Reward"
-        })
-    end)
 end
 
 local function waitForResultText()
@@ -306,27 +291,44 @@ local function waitForResultText()
     if not resultFrame then return "Unknown" end
 
     local skipText = resultFrame:WaitForChild("Result"):FindFirstChild("SkipText")
+    if not skipText then return "Unknown" end
+
+    print("✅ Found SkipText. Starting click loop...")
+
     local timeout = 999
     local elapsed = 0
+    local invisibleTime = 0
+    local stopDelay = 2
 
-    -- 🟡 Phase 1: Tap until SkipText disappears (animation finished)
-    while skipText and skipText.Visible and elapsed < timeout do
-        pcall(function()
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
-        end)
+    -- 🔁 Click while SkipText is visible, or hasn't been invisible for more than 2s
+    while elapsed < timeout do
+        if skipText.Visible then
+            invisibleTime = 0
+            pcall(function()
+                VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
+                VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
+            end)
+        else
+            invisibleTime += 0.1
+            if invisibleTime >= stopDelay then
+                print("✅ SkipText has been invisible for 2s. Done clicking.")
+                break
+            end
+        end
+
         task.wait(0.1)
         elapsed += 0.1
     end
 
-    -- 🟢 Phase 2: Wait for "Victory"/"Defeat" stamp to appear
+    -- 🔁 Wait for "Victory" or "Defeat" result text
     local stampText
     elapsed = 0
     while elapsed < timeout do
         pcall(function()
             local stampFrame = MainUI.ResultFrame.Result.ExpandFrame.TopFrame.BoxFrame
                 .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup:FindFirstChild("StampFrame")
-            local title = stampFrame and stampFrame:FindFirstChild("StampFrame") and stampFrame.StampFrame:FindFirstChild("Title")
+            local innerStamp = stampFrame and stampFrame:FindFirstChild("StampFrame")
+            local title = innerStamp and innerStamp:FindFirstChild("Title")
             if title then
                 stampText = title.Text
                 print("📘 Detected result text:", stampText)
@@ -346,6 +348,7 @@ local function waitForResultText()
 
     return "Unknown"
 end
+
 
 local function reportStageResult(resultText)
     local username = Players.LocalPlayer.Name
