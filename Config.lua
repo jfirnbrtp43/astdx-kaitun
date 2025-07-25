@@ -4,8 +4,6 @@ local defaultConfig = {
     UseMultiSummon = false,
     CheckInterval = 5,
     TargetUnits = {
-        ["GokuEpic"] = 3,
-        ["Sanji"] = 1
     },
     RedeemCodes = {
         "AFIRSTTIME3001",
