@@ -1,6 +1,5 @@
 -- Config.lua
 local defaultConfig = {
-    WebhookURL = "",
     UseMultiSummon = false,
     CheckInterval = 5,
     TargetUnits = {

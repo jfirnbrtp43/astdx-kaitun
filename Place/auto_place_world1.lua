@@ -305,7 +305,7 @@ local function waitForResultText()
     local centerX = screenSize.X / 2
     local centerY = screenSize.Y / 2
 
-    local timeout = 10
+    local timeout = 999
     local elapsed = 0
 
     while elapsed < timeout do
