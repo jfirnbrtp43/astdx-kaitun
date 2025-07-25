@@ -9,7 +9,7 @@ local UnitFolder = workspace:WaitForChild("UnitFolder")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local MainUI = PlayerGui:WaitForChild("MainUI")
-local GU = PlayerGui:WaitForChild("GU") -- ✅ Fix: GU is separate from MainUI
+local GU = PlayerGui:WaitForChild("GU")
 local matchEnded = false
 
 local WebhookURL = ""

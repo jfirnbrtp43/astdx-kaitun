@@ -9,6 +9,7 @@ local UnitFolder = workspace:WaitForChild("UnitFolder")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local MainUI = PlayerGui:WaitForChild("MainUI")
+local GU = PlayerGui:WaitForChild("GU")
 local matchEnded = false
 
 local WebhookURL = ""
@@ -20,9 +21,9 @@ end
 local HttpService = game:GetService("HttpService")
 
 local function getMapAndArc()
-    local mapTitlePath = MainUI.GU.MenuFrame.MapFrame.MapExpand.BoxFrame
+    local mapTitlePath = GU.MenuFrame.MapFrame.MapExpand.BoxFrame
         .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.TopFrame.MapTitle
-    local arcTitlePath = MainUI.GU.MenuFrame.MapFrame.MapExpand.BoxFrame
+    local arcTitlePath = GU.MenuFrame.MapFrame.MapExpand.BoxFrame
         .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.TopFrame.ActTitle
 
     local mapTitle = mapTitlePath and mapTitlePath.Text or "Unknown Map"

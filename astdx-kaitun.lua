@@ -9,7 +9,8 @@ getgenv().AutoSummonConfig = {
         T4 = false, S4 = false, N4 = false,
         T5 = false, S5 = false, N5 = false
     },
-    StoryDifficulty = "Hard"
+    StoryDifficulty = "Hard",
+    ShowStatusText = true
 }
 
 -- Wait for game to load before running main logic
