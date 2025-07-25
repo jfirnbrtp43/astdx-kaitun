@@ -297,32 +297,36 @@ end
 
 local function waitForResultText()
     local VirtualInputManager = game:GetService("VirtualInputManager")
-
-    local resultFrame = MainUI:WaitForChild("ResultFrame", 10)
-    repeat task.wait() until resultFrame.Visible
-
-    local screenSize = workspace.CurrentCamera.ViewportSize
+    local camera = workspace.CurrentCamera
+    local screenSize = camera.ViewportSize
     local centerX = screenSize.X / 2
     local centerY = screenSize.Y / 2
 
+    local resultFrame = MainUI:WaitForChild("ResultFrame", 10)
+    if not resultFrame then return "Unknown" end
+
+    local skipText = resultFrame:WaitForChild("Result"):FindFirstChild("SkipText")
     local timeout = 999
     local elapsed = 0
 
-    while elapsed < timeout do
-        -- Click middle of screen
+    -- 🟡 Phase 1: Tap until SkipText disappears (animation finished)
+    while skipText and skipText.Visible and elapsed < timeout do
         pcall(function()
             VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
             VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
         end)
+        task.wait(0.1)
+        elapsed += 0.1
+    end
 
-        local stampText = nil
-
+    -- 🟢 Phase 2: Wait for "Victory"/"Defeat" stamp to appear
+    local stampText
+    elapsed = 0
+    while elapsed < timeout do
         pcall(function()
             local stampFrame = MainUI.ResultFrame.Result.ExpandFrame.TopFrame.BoxFrame
                 .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup:FindFirstChild("StampFrame")
-
-            local innerStamp = stampFrame and stampFrame:FindFirstChild("StampFrame")
-            local title = innerStamp and innerStamp:FindFirstChild("Title")
+            local title = stampFrame and stampFrame:FindFirstChild("StampFrame") and stampFrame.StampFrame:FindFirstChild("Title")
             if title then
                 stampText = title.Text
                 print("📘 Detected result text:", stampText)
@@ -335,7 +339,6 @@ local function waitForResultText()
                 return normalized:sub(1, 1):upper() .. normalized:sub(2)
             end
         end
-
 
         task.wait(0.1)
         elapsed += 0.1
