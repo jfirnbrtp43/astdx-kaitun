@@ -3,9 +3,6 @@ getgenv().AutoSummonConfig = {
     UseMultiSummon = true,
     CheckInterval = 3,
     TargetUnits = {
-        ["Broly"] = 3,
-        ["GokuEpic"] = 3,
-        ["Zeke"] = 1
     },
     AutoSellSettings = {
         T3 = true, S3 = false, N3 = true,
