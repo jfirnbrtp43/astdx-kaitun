@@ -11,7 +11,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local MainUI = PlayerGui:WaitForChild("MainUI")
 local matchEnded = false
 
-local WebhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM"
+local WebhookURL = ""
 
 local function getYen()
     return LocalPlayer:WaitForChild("Money").Value

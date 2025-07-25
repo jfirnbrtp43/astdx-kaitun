@@ -25,6 +25,45 @@ local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
 task.wait(15)
 
+-- 📦 Code Redemption (Runs once at start)
+local redeemCodes = {
+    "AFIRSTTIME3001",
+    "FREENIMBUSMOUNT",
+    "VERYHIGHLIKEB",
+    "UPD1",
+    "LIKEF5",
+    "THREEHUNDREDTHOUSANDPLAYERS",
+    "FOLLOWS10KBREAD",
+    "UPD2",
+    "NEXTLIKEGOAL500K",
+    "THANKYOUFORLIKES123",
+    "MBSHUTDOWNB",
+    "THANKYOUFOR500MVISITS",
+    "2MGROUPMEMBERS"
+}
+
+local GetFunction = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("GetFunction")
+
+for _, code in ipairs(redeemCodes) do
+    local args = {
+        {
+            Type = "Code",
+            Mode = "Redeem",
+            Code = code
+        }
+    }
+    local success, response = pcall(function()
+        return GetFunction:InvokeServer(unpack(args))
+    end)
+    if success then
+        print("✅ Redeemed code:", code, "| Response:", response)
+    else
+        warn("❌ Failed to redeem code:", code, "| Error:", response)
+    end
+    task.wait(1)
+end
+task.wait(2) -- Wait a bit after redeeming codes
+
 -- Map of world names to placement script URLs
 local worldToScriptUrl = {
     ["Innovation Island"] = "https://raw.githubusercontent.com/jfirnbrtp43/astdx-kaitun/refs/heads/main/Place/auto_place_world1.lua",
