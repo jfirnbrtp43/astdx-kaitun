@@ -316,7 +316,7 @@ local function waitForResultText()
             end
         end
 
-        task.wait(0.1)
+        task.wait(1)
         elapsed += 0.1
     end
 
