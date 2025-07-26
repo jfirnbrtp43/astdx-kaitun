@@ -1,5 +1,5 @@
 getgenv().AutoSummonConfig = {
-    WebhookURL = "https://ptb.discord.com/api/webhooks/987499746853806110/XYjpFsIq4PxIk-v271EKeSIS4outAl-o19rJoc6Z3eoK_ZEqdbTB2w19xkIuuSt7UtbM",
+    WebhookURL = "https://ptb.discord.com/api/webhooks/1122808274127949854/4bJFDgs7uuC8PZKM6fqyZ5bOvgmKbEfxBuigPhFdIbX0NuccVpsEf0IdMcDo4mrsVJYU",
     UseMultiSummon = true,
     CheckInterval = 3,
     TargetUnits = {
