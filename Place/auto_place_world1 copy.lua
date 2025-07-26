@@ -20,7 +20,6 @@ end
 
 local HttpService = game:GetService("HttpService")
 
-
 local function getMapAndArc()
     local mapTitlePath = GU.MenuFrame.MapFrame.MapExpand.BoxFrame
         .InfoFrame2.InnerFrame.CanvasFrame.CanvasGroup.TopFrame.MapTitle
@@ -33,8 +32,9 @@ local function getMapAndArc()
     return mapTitle, arcTitle
 end
 
-
 local function sendWebhook(data)
+    -- Commented out webhook to test if it causes issue
+    --[[
     local success, err = pcall(function()
         HttpService:RequestAsync({
             Url = WebhookURL,
@@ -49,8 +49,8 @@ local function sendWebhook(data)
     if not success then
         warn("❌ Webhook error:", err)
     end
+    --]]
 end
-
 
 local function autoPlaceAndUpgrade()
     local success, inventory = pcall(function()
@@ -105,7 +105,6 @@ local function autoPlaceAndUpgrade()
     }
 
     local summonList = {}
-
 
     -- Place Uryu exactly 3 times at fixed positions
     for i = 1, #uryuCFs do
@@ -299,7 +298,8 @@ local function waitForResultText()
     local invisibleTime = 0
     local stopDelay = 2
 
-    -- 🔁 Click while SkipText is visible, or hasn't been invisible for more than 2s
+    -- Clicking disabled for test
+    --[[
     while elapsed < timeout do
         if skipText.Visible then
             invisibleTime = 0
@@ -318,8 +318,10 @@ local function waitForResultText()
         task.wait(1)
         elapsed += 0.1
     end
+    --]]
 
-    -- 🔁 Wait for "Victory" or "Defeat" result text
+    -- Waiting for Victory or Defeat disabled for test
+    --[[
     local stampText
     elapsed = 0
     while elapsed < timeout do
@@ -344,6 +346,7 @@ local function waitForResultText()
         task.wait(0.1)
         elapsed += 0.1
     end
+    --]]
 
     return "Unknown"
 end
@@ -355,6 +358,8 @@ local function reportStageResult(resultText)
     
     local mapName, arcName = getMapAndArc()
 
+    -- Commented out webhook send for test
+    --[[
     sendWebhook({
         username = "ASTDX Bot",
         embeds = {{
@@ -370,8 +375,9 @@ local function reportStageResult(resultText)
             }
         }}
     })
+    --]]
 
-    print("📤 Webhook sent for result:", resultText, "📍", mapName, "-", arcName)
+    print("📤 Webhook (disabled) for result:", resultText, "📍", mapName, "-", arcName)
 end
 
 -- ✅ Initial vote before first match
